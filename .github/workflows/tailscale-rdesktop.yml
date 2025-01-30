@@ -1,0 +1,34 @@
+name: tailscale-rdesktop
+on:
+  workflow_dispatch:
+
+jobs:
+  rdesktop-test:
+    runs-on: ubuntu-24.04
+    
+    steps:
+      - name: Run system container with `podman`
+        run: |
+          podman run -d --name steam \
+            --cap-add=NET_ADMIN --cap-add=NET_RAW --device=/dev/net/tun \
+            --shm-size=1g \
+            ghcr.io/gbraad-gaming/steamlink:latest
+      - name: Tailscale setup (root)
+        run: |
+          until podman exec steam tailscale up --auth-key ${TAILSCALE_AUTHKEY}
+          do
+              sleep 0.1
+          done
+          podman exec steam tailscale set --ssh
+          podman exec steam tailscale set --hostname github-${HOSTNAME}
+        env:
+          TAILSCALE_AUTHKEY: ${{ secrets.TAILSCALE_AUTHKEY}}
+      - name: Hang around
+        run: |
+          until podman exec steam systemctl is-active kasmvncserver
+          do
+               sleep 1
+          done
+          IP=`podman exec steam tailscale ip -4`
+          echo "Open in your web browser: https://${IP}:8444"
+          sleep infinity
