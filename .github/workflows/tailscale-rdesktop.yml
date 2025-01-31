@@ -10,6 +10,7 @@ jobs:
       - name: Run system container with `podman`
         run: |
           podman run -d --name steam \
+            --privileged \
             --cap-add=NET_ADMIN --cap-add=NET_RAW --device=/dev/net/tun \
             --shm-size=1g \
             ghcr.io/gbraad-gaming/steamlink:latest
