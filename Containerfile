@@ -8,17 +8,12 @@ USER root
 RUN dnf install -y \
         flatpak \
     && dnf clean all \
-    && rm -rf /var/cache/yum
-
-RUN flatpak remote-add --if-not-exists \
+    && rm -rf /var/cache/yum \
+    && flatpak remote-add --if-not-exists \
         flathub https://dl.flathub.org/repo/flathub.flatpakrepo \
     && flatpak install --assumeyes \
-        flathub com.valvesoftware.SteamLink
+        flathub com.valvesoftware.SteamLink \
+    && git config -f /etc/rdesktop/rdesktop.ini rdesktop.title "Personal SteamLink" \
+    && git config -f /etc/rdesktop/rdesktop.ini rdesktop.exec "flatpak run com.valvesoftware.SteamLink"
 
-USER gbraad
-
-RUN echo "exec flatpak run com.valvesoftware.SteamLink" >> $HOME/.config/i3/config
-
-# ensure to become root for systemd
-USER root
 #ENTRYPOINT ["/sbin/init"]
